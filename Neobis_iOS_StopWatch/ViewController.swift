@@ -8,7 +8,6 @@
 import UIKit
 
 class ViewController: UIViewController {
-    
     let timerImage: UIImageView = {
         let image = UIImageView()
         image.image = UIImage(systemName: "timer")

@@ -28,7 +28,8 @@ class ViewController: UIViewController, UIPickerViewDataSource, UIPickerViewDele
     
     let timerImage: UIImageView = {
         let image = UIImageView()
-        image.image = UIImage(systemName: "timer")
+        //  let image = UIImageView(image: 
+        // image.image = UIImage(systemName: "timer")
         image.contentMode = .scaleAspectFit
         image.tintColor = .black
         image.translatesAutoresizingMaskIntoConstraints = false
@@ -51,7 +52,7 @@ class ViewController: UIViewController, UIPickerViewDataSource, UIPickerViewDele
         text.translatesAutoresizingMaskIntoConstraints = false
         return text
     }()
-    
+    // 
     var stopButton: UIButton = {
         let button = UIButton()
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -119,7 +120,10 @@ class ViewController: UIViewController, UIPickerViewDataSource, UIPickerViewDele
         startButton.addSubview(startImage)
         view.addSubview(pauseButton)
         pauseButton.addSubview(pauseImage)
-        
+
+        // [timerImage, segmentController].forEach {
+        //     $0.translatesAutoresizingMaskIntoConstraints = false
+        // }
         NSLayoutConstraint.activate([
             timerImage.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             timerImage.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: heightD(20)),

@@ -60,8 +60,7 @@ class ViewController: UIViewController, UIPickerViewDataSource, UIPickerViewDele
     }()
     
     var stopImage: UIImageView = {
-        let image = UIImageView()
-        image.image = UIImage(systemName: "stop.circle.fill")
+        let image = UIImageView(image: UIImage(systemName: "stop.circle.fill"))
         image.contentMode = .scaleAspectFit
         image.tintColor = .black
         image.translatesAutoresizingMaskIntoConstraints = false

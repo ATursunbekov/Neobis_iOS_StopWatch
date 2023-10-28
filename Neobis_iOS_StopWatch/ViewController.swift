@@ -7,108 +7,98 @@
 
 import UIKit
 
-class ViewController: UIViewController, UIPickerViewDataSource, UIPickerViewDelegate {
+class ViewController: UIViewController {
     
     var timer: Timer?
-    var elapsedTimeInSeconds: TimeInterval = 0
-    var hour = 0
-    var min = 0
-    var sec = 0
+    var passedTime: TimeInterval = 0
+    var stopWatchHours = 0
+    var stopWatchMins = 0
+    var stopWatchSecs = 0
     
     var isStarted = false
     
     var isTimer = true
     var counter = 1.0
     
-    let hours = Array(0...23)
-    let minutes = Array(0...59)
-    let seconds = Array(0...59)
+    private lazy var hours = Array(0...23)
+    private lazy var minutes = Array(0...59)
+    private lazy var seconds = Array(0...59)
     
-    var pickerView: UIPickerView!
+    private lazy var pickerView: UIPickerView = {
+        let pickerView = UIPickerView()
+        pickerView.dataSource = self
+        pickerView.delegate = self
+        return pickerView
+    }()
     
-    let timerImage: UIImageView = {
-        let image = UIImageView()
-        image.image = UIImage(systemName: "timer")
+    private lazy var timerImage: UIImageView = {
+        let image = UIImageView(image: UIImage(systemName: "timer"))
         image.contentMode = .scaleAspectFit
         image.tintColor = .black
-        image.translatesAutoresizingMaskIntoConstraints = false
         return image
     }()
     
-    let segmentController: UISegmentedControl = {
+    private lazy var segmentController: UISegmentedControl = {
         let segmentController = UISegmentedControl(items: ["Timer", "Stopwatch"])
         segmentController.selectedSegmentIndex = 0
-        segmentController.translatesAutoresizingMaskIntoConstraints = false
         return segmentController
     }()
     
-    let timerText: UILabel = {
+    private lazy var timerText: UILabel = {
         let text = UILabel()
         text.text = "00:00:00"
         text.textAlignment = .center
         text.textColor = .black
         text.font = UIFont.boldSystemFont(ofSize: 70)
-        text.translatesAutoresizingMaskIntoConstraints = false
         return text
     }()
     
-    var stopButton: UIButton = {
+    private lazy var stopButton: UIButton = {
         let button = UIButton()
-        button.translatesAutoresizingMaskIntoConstraints = false
-        
         return button
     }()
     
-    var stopImage: UIImageView = {
+    private lazy var stopImage: UIImageView = {
         let image = UIImageView(image: UIImage(systemName: "stop.circle.fill"))
         image.contentMode = .scaleAspectFit
         image.tintColor = .black
-        image.translatesAutoresizingMaskIntoConstraints = false
-        
         return image
     }()
     
-    var startButton: UIButton =  {
+    private lazy var startButton: UIButton =  {
         let button = UIButton()
-        button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
-    var startImage: UIImageView = {
-        let image = UIImageView()
-        image.image = UIImage(systemName: "play.circle.fill")
+    private lazy var startImage: UIImageView = {
+        let image = UIImageView(image: UIImage(systemName: "play.circle.fill"))
         image.contentMode = .scaleAspectFit
         image.tintColor = .black
-        image.translatesAutoresizingMaskIntoConstraints = false
         return image
     }()
     
-    var pauseButton: UIButton =  {
+    private lazy var pauseButton: UIButton =  {
         let button = UIButton()
-        button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
-    var pauseImage: UIImageView = {
-        let image = UIImageView()
-        image.image = UIImage(systemName: "pause.circle.fill")
+    private lazy var pauseImage: UIImageView = {
+        let image = UIImageView(image: UIImage(systemName: "pause.circle.fill"))
         image.contentMode = .scaleAspectFit
         image.tintColor = .black
-        image.translatesAutoresizingMaskIntoConstraints = false
         return image
     }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = UIColor(red: 248 / 255, green: 205 / 255, blue: 10 / 255, alpha: 1)
-        setupPicker()
         setupConstraints()
         setupTargets()
         pickerView.isHidden = true
     }
 
     //All constraints
-    func setupConstraints() {
+    private func setupConstraints() {
         view.addSubview(timerImage)
         view.addSubview(segmentController)
         view.addSubview(timerText)
@@ -118,6 +108,11 @@ class ViewController: UIViewController, UIPickerViewDataSource, UIPickerViewDele
         startButton.addSubview(startImage)
         view.addSubview(pauseButton)
         pauseButton.addSubview(pauseImage)
+        view.addSubview(pickerView)
+        
+        [timerImage, segmentController, timerText, stopButton, stopImage, startButton, startImage, pauseButton, pauseImage, pickerView].forEach{
+            $0.translatesAutoresizingMaskIntoConstraints = false
+        }
         
         NSLayoutConstraint.activate([
             timerImage.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -166,15 +161,7 @@ class ViewController: UIViewController, UIPickerViewDataSource, UIPickerViewDele
         ])
     }
     
-    func setupPicker() {
-        pickerView = UIPickerView()
-        pickerView.dataSource = self
-        pickerView.delegate = self
-        pickerView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(pickerView)
-    }
-    
-    func setupTargets() {
+    private func setupTargets() {
         segmentController.addTarget(self, action: #selector(segmentValueChanged), for: .valueChanged)
         stopButton.addTarget(self, action: #selector(stopAction), for: .touchUpInside)
         pauseButton.addTarget(self, action: #selector(pauseAction), for: .touchUpInside)
@@ -182,9 +169,8 @@ class ViewController: UIViewController, UIPickerViewDataSource, UIPickerViewDele
     }
     
     @objc func segmentValueChanged(_ sender: UISegmentedControl) {
-        let selectedIndex = sender.selectedSegmentIndex
         stopAction()
-        if selectedIndex == 0 {
+        if sender.selectedSegmentIndex == 0 {
             counter = 1
             isTimer = true
             pickerView.isHidden = true
@@ -197,12 +183,93 @@ class ViewController: UIViewController, UIPickerViewDataSource, UIPickerViewDele
         }
     }
     
-    func secondsToHoursMinutesSeconds(seconds: Int) -> (hours: Int, minutes: Int, seconds: Int) {
+    private func secondsToHoursMinutesSeconds(seconds: Int) -> (hours: Int, minutes: Int, seconds: Int) {
         let hours = seconds / 3600
         let minutes = (seconds % 3600) / 60
         let remainingSeconds = (seconds % 3600) % 60
         return (hours, minutes, remainingSeconds)
     }
+    
+    @objc func updateTimer() {
+        if !isTimer && passedTime == 0 {
+            stopAction()
+        } else {
+            passedTime += counter
+            
+            let formatter = DateComponentsFormatter()
+            formatter.allowedUnits = [.hour, .minute, .second]
+            formatter.unitsStyle = .positional
+            formatter.zeroFormattingBehavior = .pad
+            
+            if let formattedString = formatter.string(from: passedTime) {
+                timerText.text = formattedString
+            }
+        }
+    }
+    
+    @objc func stopAction() {
+        timer?.invalidate()
+        passedTime = 0
+        timerText.text = "00:00:00"
+        startImage.image = UIImage(systemName: "play.circle.fill")
+        pauseImage.image = UIImage(systemName: "pause.circle.fill")
+        isStarted = false
+        
+        if !isTimer {
+            pickerView.isHidden = false
+            pickerView.selectRow(0, inComponent: 0, animated: true)
+            pickerView.selectRow(0, inComponent: 1, animated: true)
+            pickerView.selectRow(0, inComponent: 2, animated: true)
+            stopWatchHours = 0
+            stopWatchMins = 0
+            stopWatchSecs = 0
+        }
+    }
+    
+    @objc func pauseAction() {
+        if passedTime == 0 {
+            return
+        }
+        timer?.invalidate()
+        pauseImage.image = UIImage(systemName: "pause.circle")
+        startImage.image = UIImage(systemName: "play.circle.fill")
+        isStarted = false
+        
+        if !isTimer {
+            pickerView.isHidden = false
+            let timeComponents = secondsToHoursMinutesSeconds(seconds: Int(passedTime))
+            pickerView.selectRow(timeComponents.hours, inComponent: 0, animated: true)
+            pickerView.selectRow(timeComponents.minutes, inComponent: 1, animated: true)
+            pickerView.selectRow(timeComponents.seconds, inComponent: 2, animated: true)
+        }
+    }
+    
+    @objc func startAction() {
+        if isStarted {
+            return
+        }
+        timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(updateTimer), userInfo: nil, repeats: true)
+        isStarted = true
+        startImage.image = UIImage(systemName: "play.circle")
+        pauseImage.image = UIImage(systemName: "pause.circle.fill")
+        if !isTimer && timerText.text == "00:00:00" {
+            passedTime = Double(stopWatchHours) * 3600.0 + Double(stopWatchMins) * 60.0 + Double(stopWatchSecs)
+        }
+        pickerView.isHidden = true
+    }
+    
+    
+    //For Dynamic Sizes
+    private func heightD(_ num: Double) -> Double {
+        return UIScreen.main.bounds.height * num / 896
+    }
+    
+    private func widthD(_ num: Double) -> Double{
+        return UIScreen.main.bounds.width * num / 414
+    }
+}
+
+extension ViewController: UIPickerViewDataSource, UIPickerViewDelegate {
     
     func numberOfComponents(in pickerView: UIPickerView) -> Int {
         return 3
@@ -235,87 +302,8 @@ class ViewController: UIViewController, UIPickerViewDataSource, UIPickerViewDele
     }
     
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-        hour = hours[pickerView.selectedRow(inComponent: 0)]
-        min = minutes[pickerView.selectedRow(inComponent: 1)]
-        sec = seconds[pickerView.selectedRow(inComponent: 2)]
-    }
-    
-    @objc func updateTimer() {
-        if !isTimer && elapsedTimeInSeconds == 0 {
-            stopAction()
-        } else {
-            elapsedTimeInSeconds += counter
-            
-            let formatter = DateComponentsFormatter()
-            formatter.allowedUnits = [.hour, .minute, .second]
-            formatter.unitsStyle = .positional
-            formatter.zeroFormattingBehavior = .pad
-            
-            if let formattedString = formatter.string(from: elapsedTimeInSeconds) {
-                timerText.text = formattedString
-            }
-        }
-    }
-    
-    @objc func stopAction() {
-        timer?.invalidate()
-        elapsedTimeInSeconds = 0
-        timerText.text = "00:00:00"
-        startImage.image = UIImage(systemName: "play.circle.fill")
-        pauseImage.image = UIImage(systemName: "pause.circle.fill")
-        isStarted = false
-        
-        if !isTimer {
-            pickerView.isHidden = false
-            pickerView.selectRow(0, inComponent: 0, animated: true)
-            pickerView.selectRow(0, inComponent: 1, animated: true)
-            pickerView.selectRow(0, inComponent: 2, animated: true)
-            hour = 0
-            min = 0
-            sec = 0
-        }
-    }
-    
-    @objc func pauseAction() {
-        if elapsedTimeInSeconds == 0 {
-            return
-        }
-        timer?.invalidate()
-        pauseImage.image = UIImage(systemName: "pause.circle")
-        startImage.image = UIImage(systemName: "play.circle.fill")
-        isStarted = false
-        
-        if !isTimer {
-            pickerView.isHidden = false
-            let timeComponents = secondsToHoursMinutesSeconds(seconds: Int(elapsedTimeInSeconds))
-            pickerView.selectRow(timeComponents.hours, inComponent: 0, animated: true)
-            pickerView.selectRow(timeComponents.minutes, inComponent: 1, animated: true)
-            pickerView.selectRow(timeComponents.seconds, inComponent: 2, animated: true)
-        }
-    }
-    
-    @objc func startAction() {
-        if isStarted {
-            return
-        }
-        timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(updateTimer), userInfo: nil, repeats: true)
-        isStarted = true
-        startImage.image = UIImage(systemName: "play.circle")
-        pauseImage.image = UIImage(systemName: "pause.circle.fill")
-        if !isTimer && timerText.text == "00:00:00" {
-            elapsedTimeInSeconds = Double(hour) * 3600.0 + Double(min) * 60.0 + Double(sec)
-        }
-        pickerView.isHidden = true
-    }
-    
-    
-    //For Dynamic Sizes
-    func heightD(_ num: Double) -> Double {
-        return UIScreen.main.bounds.height * num / 896
-    }
-    
-    func widthD(_ num: Double) -> Double{
-        return UIScreen.main.bounds.width * num / 414
+        stopWatchHours = hours[pickerView.selectedRow(inComponent: 0)]
+        stopWatchMins = minutes[pickerView.selectedRow(inComponent: 1)]
+        stopWatchSecs = seconds[pickerView.selectedRow(inComponent: 2)]
     }
 }
-
